@@ -16,32 +16,36 @@ class MazeEnvironment:
         self.collisions = 0
         
         # Generate walls
-        if self.dynamic:
-            self._generate_random_walls()
-        else:
-            self._generate_static_walls()
+        self._generate_initial_walls()
         
         return self._get_state()
     
-    def _generate_static_walls(self):
-        """Generate fixed wall configuration"""
+    def _generate_initial_walls(self):
+        """Generate initial wall configuration"""
         self.walls = set()
-        # Create a simple maze pattern
-        for i in range(2, 8):
-            self.walls.add((i, 3))
-            self.walls.add((i, 6))
-        for j in range(3, 7):
-            self.walls.add((2, j))
-            self.walls.add((7, j))
-    
-    def _generate_random_walls(self):
-        """Generate random wall configuration"""
-        self.walls = set()
+        # Create initial maze pattern with random walls
         num_walls = random.randint(15, 25)
         for _ in range(num_walls):
             wall = (random.randint(0, self.size-1), random.randint(0, self.size-1))
             if wall != tuple(self.agent_pos) and wall != tuple(self.goal_pos):
                 self.walls.add(wall)
+    
+    def _move_one_wall(self):
+        """Move exactly one wall to a new random position"""
+        if not self.walls:
+            return
+        
+        # remove a random wall
+        wall_to_move = random.choice(list(self.walls))
+        self.walls.remove(wall_to_move)
+
+        #add a new wall at a different random position
+        new_wall = (random.randint(0, self.size-1), random.randint(0, self.size-1))
+        if (new_wall != tuple(self.agent_pos) and 
+                new_wall != tuple(self.goal_pos) and 
+                new_wall not in self.walls):
+                self.walls.add(new_wall)
+                break
     
     def _get_state(self):
         """Get current state representation"""
@@ -57,9 +61,9 @@ class MazeEnvironment:
         """Execute action: 0=up, 1=right, 2=down, 3=left"""
         self.steps += 1
         
-        # In dynamic mode, randomly change wall positions during episode
-        if self.dynamic and random.random() < 0.1:  # 10% chance per step
-            self._generate_random_walls()
+        # In dynamic mode, move exactly one wall every four steps
+        if self.dynamic and self.steps % 6 == 0:
+            self._move_one_wall()
         
         moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
         move = moves[action]
@@ -88,8 +92,9 @@ class MazeEnvironment:
             reward = -0.1 - 0.01 * dist
             done = False
         
-        # Episode timeout
+        # episode ends after 200 steps
         if self.steps >= 200:
             done = True
         
         return self._get_state(), reward, done, {'collisions': self.collisions}
+    
