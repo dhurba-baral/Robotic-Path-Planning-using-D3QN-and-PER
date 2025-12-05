@@ -1,10 +1,10 @@
 import numpy as np
+import os
 import torch
 from models import DQN, DuelingDQN
 from PER import PrioritizedReplayBuffer, ReplayBuffer
 from collections import namedtuple
 import random
-import os
 
 Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state', 'done'])
 
@@ -44,9 +44,9 @@ class Agent:
 
         # Replay Buffer
         if use_per:
-            self.memory = PrioritizedReplayBuffer(10000)
+            self.memory = PrioritizedReplayBuffer(50000)
         else:
-            self.memory = ReplayBuffer(10000)
+            self.memory = ReplayBuffer(50000)
 
         self.steps = 0
 

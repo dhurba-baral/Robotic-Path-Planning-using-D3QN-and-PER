@@ -3,7 +3,7 @@ import random
 
 class MazeEnvironment:
     """10x10 maze environment with static and dynamic wall configurations"""
-    def __init__(self, size=10, dynamic=False):
+    def __init__(self, size=5, dynamic=False):
         self.size = size
         self.dynamic = dynamic
         self.reset()
@@ -42,10 +42,10 @@ class MazeEnvironment:
         #add a new wall at a different random position
         new_wall = (random.randint(0, self.size-1), random.randint(0, self.size-1))
         if (new_wall != tuple(self.agent_pos) and 
-                new_wall != tuple(self.goal_pos) and 
-                new_wall not in self.walls):
-                self.walls.add(new_wall)
-                break
+            new_wall != tuple(self.goal_pos) and 
+            new_wall not in self.walls):
+            self.walls.add(new_wall)
+            break
     
     def _get_state(self):
         """Get current state representation"""
